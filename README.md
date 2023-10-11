@@ -14,7 +14,7 @@ Before using this application, ensure you have the following in place:
 Clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/your-username/go-cloud-build-trigger-runner.git
+git clone https://github.com/DanielSuhett/deploy-to-cloudbuild.git
 ```
 
 Install dependencies using the following command:
