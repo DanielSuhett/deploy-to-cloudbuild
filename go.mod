@@ -1,4 +1,4 @@
-module github.com/DanielSuhett/deploy
+module github.com/DanielSuhett/cloud-build-runner
 
 go 1.21.2
 
@@ -12,6 +12,8 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/janeczku/go-spinner v0.0.0-20150530144529-cf8ef1d64394 // indirect
+	github.com/mattn/go-runewidth v0.0.9 // indirect
+	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/net v0.15.0 // indirect
