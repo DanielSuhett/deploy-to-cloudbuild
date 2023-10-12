@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"flag"
 	"fmt"
@@ -19,7 +20,7 @@ type cmd struct {
 	branch  *string
 }
 
-func Command(name string) cmd {
+func command(name string) cmd {
 	f := flag.NewFlagSet(name, flag.ExitOnError)
 	return cmd{
 		flag:    f,
@@ -29,11 +30,22 @@ func Command(name string) cmd {
 	}
 }
 
+func getProject() (string, error) {
+	v, err := os.ReadFile(".config")
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Println("Project:", string(v))
+
+	return string(v), nil
+}
+
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
 
-	deploy := Command("deploy")
-	status := Command("status")
+	deploy := command("deploy")
+	status := command("status")
 
 	if len(os.Args) < 1 {
 		fmt.Println("expected subcommands")
@@ -48,8 +60,18 @@ func main() {
 			panic(err)
 		}
 
-		if *deploy.project == "" || *deploy.trigger == "" || *deploy.branch == "" {
-			panic("missing args")
+		if *deploy.trigger == "" {
+			panic("trigger is required")
+		}
+
+		if *deploy.project == "" {
+			p, err := getProject()
+
+			if err != nil {
+				panic(err)
+			}
+
+			*deploy.project = p
 		}
 
 		b, err := service.Projects.Triggers.Run(
@@ -71,15 +93,24 @@ func main() {
 		os.Exit(1)
 	case "status":
 		status.flag.Parse(os.Args[2:])
-		fmt.Println(os.Args[2:])
 		ctx := context.Background()
 		service, err := cloudbuild.NewService(ctx)
 		if err != nil {
 			panic(err)
 		}
 
-		if *status.project == "" || *status.trigger == "" {
-			panic("missing args")
+		if *status.trigger == "" {
+			panic("trigger is required")
+		}
+
+		if *status.project == "" {
+			p, err := getProject()
+
+			if err != nil {
+				panic(err)
+			}
+
+			*status.project = p
 		}
 
 		filter := fmt.Sprintf("substitutions.TRIGGER_NAME=\"%s\"", *status.trigger)
@@ -108,6 +139,30 @@ func main() {
 		table.Render()
 
 		os.Exit(1)
+	case "config":
+		fmt.Print("Default project: ")
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+
+		err := scanner.Err()
+
+		if err != nil {
+			panic(err)
+		}
+
+		text := scanner.Text()
+
+		f, err := os.OpenFile(".config", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+
+		if err != nil {
+			panic(err)
+		}
+
+		if _, err = f.WriteString(text); err != nil {
+			panic(err)
+		}
+
+		defer f.Close()
 	default:
 		os.Exit(1)
 	}
