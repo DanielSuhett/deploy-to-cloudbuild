@@ -10,6 +10,13 @@ Before using this application, ensure you have the following in place:
 
 ## Configuration
 
+Log in to gcloud auth:
+
+```bash
+gcloud auth application-default login
+```
+
+
 Clone this repository to your local machine:
 
 ```bash
